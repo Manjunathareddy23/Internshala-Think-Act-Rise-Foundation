@@ -1,18 +1,13 @@
-import os
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-import time
 import requests
 from bs4 import BeautifulSoup
+import os
 
 PDF_FOLDER = "pdfs"
 os.makedirs(PDF_FOLDER, exist_ok=True)
 
-# --- Fetch Case Details (unchanged, using requests for specific case) ---
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
+# --- Fetch individual case ---
 def fetch_case(case_type, case_number, year):
     url = "https://karnatakajudiciary.kar.nic.in/case-status.asp"
     data = {
@@ -42,39 +37,26 @@ def fetch_case(case_type, case_number, year):
         "next_hearing": next_hearing,
         "status": status,
         "raw_response": resp.text,
-        "pdf_path": ""
+        "pdf_path": ""  # optional PDF download later
     }
 
-# --- Fetch Cause List using Selenium ---
+# --- Fetch cause list (dummy local HTML file for testing) ---
 def fetch_causelist():
-    # Configure headless Chrome
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-
-    service = Service("/path/to/chromedriver")  # <-- REPLACE with your chromedriver path
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-
-    url = "https://karnatakajudiciary.kar.nic.in/dailycause-list.asp"
     try:
-        driver.get(url)
-        time.sleep(5)  # wait for page to load
-        cases = []
-        rows = driver.find_elements(By.XPATH, "//table//tr")[1:]  # skip header
-        for row in rows:
-            cols = row.find_elements(By.TAG_NAME, "td")
-            if len(cols) >= 4:
-                cases.append({
-                    "case_number": cols[0].text.strip(),
-                    "parties": cols[1].text.strip(),
-                    "next_hearing": cols[2].text.strip(),
-                    "status": cols[3].text.strip()
-                })
-    except Exception as e:
-        print("Error fetching cause list:", e)
-        cases = []
-    finally:
-        driver.quit()
+        with open("test_causelist.html", "r") as f:
+            html = f.read()
+    except FileNotFoundError:
+        return None
 
+    soup = BeautifulSoup(html, 'html.parser')
+    cases = []
+    for row in soup.select("table tr")[1:]:
+        cols = row.find_all("td")
+        if len(cols) >= 4:
+            cases.append({
+                "case_number": cols[0].text.strip(),
+                "parties": cols[1].text.strip(),
+                "next_hearing": cols[2].text.strip(),
+                "status": cols[3].text.strip()
+            })
     return cases
