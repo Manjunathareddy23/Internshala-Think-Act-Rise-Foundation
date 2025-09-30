@@ -37,7 +37,7 @@ if st.button("Fetch Today's Cause List"):
     st.info("Fetching cause list...")
     causelist = fetch_causelist()
     if not causelist:
-        st.error("Unable to fetch cause list. Please check the URL or your network.")
+        st.error("Unable to fetch cause list. Please check the test HTML file.")
     else:
         st.success(f"{len(causelist)} cases found.")
         for c in causelist:
