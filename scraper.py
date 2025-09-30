@@ -11,7 +11,7 @@ HEADERS = {
 
 # --- Fetch Case Details ---
 def fetch_case(case_type, case_number, year):
-   url = f"https://karnatakajudiciary.kar.nic.in/case-status.asp?caseType={case_type}&caseNo={case_number}&year={year}"
+    url = f"https://karnatakajudiciary.kar.nic.in/case-status.asp?caseType={case_type}&caseNo={case_number}&year={year}"
 
     try:
         resp = requests.get(url, headers=HEADERS, timeout=10)
